@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบประเมินความสะอาด | BCH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style> 
+        body { font-family: 'Prompt', sans-serif; } 
+        
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        .star-rating input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .star-rating label {
+            cursor: pointer;
+            color: #e2e8f0;
+            font-size: 2.75rem;
+            transition: color 0.2s ease-in-out, transform 0.1s;
+        }
+        /* เปลี่ยนสีดาวเวลา Hover ให้เป็นสีทองสว่าง */
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: #fbbf24;
+        }
+        .star-rating label:active {
+            transform: scale(0.85);
+        }
+        
+        .swal2-title, .swal2-html-container, .swal2-confirm {
+            font-family: 'Prompt', sans-serif !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased selection:bg-teal-500 selection:text-white pb-10">
+
+    <div class="max-w-2xl mx-auto px-4 py-8">
+        <div class="bg-gradient-to-r from-teal-600 to-emerald-700 text-white p-8 rounded-2xl shadow-lg mb-8 text-center relative overflow-hidden">
+            <i class="fa-solid fa-sparkles text-5xl mb-4 text-yellow-300 drop-shadow-md"></i>
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-wide mb-2">ประเมินความสะอาดของสถานที่</h1>
+            <p class="text-teal-100 text-base md:text-lg font-light">โรงพยาบาลกรุงเทพคริสเตียน</p>
+        </div>
+
+        <form id="surveyForm" class="space-y-8">
+
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-8">
+                <h2 class="text-xl font-semibold text-teal-900 border-l-4 border-teal-500 pl-3 mb-6">กรุณาให้คะแนน (5 ดาว = ดีมาก)</h2>
+                
+                <div class="space-y-3">
+                    <p class="text-lg font-medium text-slate-700">1. โถงในอาคาร พื้นที่ทางเดิน โต๊ะ เก้าอี้และที่นั่งพักรอ <br><span class="text-base text-slate-500 font-normal">สะอาด ไม่มีเศษขยะ</span> <span class="text-red-500">*</span></p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 rating-container"></div>
+                </div>
+                
+                <div class="space-y-3">
+                    <p class="text-lg font-medium text-slate-700">2. บันไดและบันไดเลื่อน <br><span class="text-base text-slate-500 font-normal">ไม่มีขยะ ฝุ่น และหยากไย่</span> <span class="text-red-500">*</span></p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 rating-container"></div>
+                </div>
+                
+                <div class="space-y-3">
+                    <p class="text-lg font-medium text-slate-700">3. ภายในลิฟต์ <br><span class="text-base text-slate-500 font-normal">พื้นและผนัง สะอาด ไม่มีกลิ่น</span> <span class="text-red-500">*</span></p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 rating-container"></div>
+                </div>
+                
+                <div class="space-y-3">
+                    <p class="text-lg font-medium text-slate-700">4. สุขภัณฑ์ในห้องน้ำ พื้น และอ่างล้างมือ <br><span class="text-base text-slate-500 font-normal">ไม่มีคราบสกปรก ไม่มีน้ำขัง ไม่มีกลิ่นอับชื้น</span> <span class="text-red-500">*</span></p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 rating-container"></div>
+                </div>
+                
+                <div class="space-y-3 mt-6 pt-6 border-t border-slate-200">
+                    <p class="text-xl font-bold text-teal-800">5. ความพึงพอใจโดยรวม <br><span class="text-base text-teal-600 font-medium">ต่อความสะอาดของสถานที่และสิ่งแวดล้อมภายในโรงพยาบาล</span> <span class="text-red-500">*</span></p>
+                    <div class="bg-teal-50/50 p-4 rounded-xl border border-teal-100 rating-container"></div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                <label class="block text-lg font-medium text-slate-700 mb-3">ข้อเสนอแนะเพิ่มเติมเพื่อการปรับปรุง</label>
+                <textarea name="comments" rows="4" placeholder="พิมพ์ข้อความของคุณที่นี่..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-5 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-all"></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-4 px-6 rounded-xl shadow-md hover:shadow-lg transition-all flex justify-center items-center gap-3 cursor-pointer text-xl">
+                <i class="fa-solid fa-paper-plane"></i> ส่งผลประเมิน
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // *** สำคัญมาก: นำ URL Web App ของ Google Apps Script (อันใหม่) มาใส่ตรงนี้ ***
+        const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTkGVVeZg2Jkge4H1yZPMbKERUvHOsCK-pMzzj8U_kUfdE6B6VSjQUE94E_UTTcVz1/exec";
+
+        // ตัวแปรให้ตรงกับฝั่ง Apps Script (อันใหม่)
+        const ratingFields = ['scoreHall', 'scoreStairs', 'scoreElevator', 'scoreRestroom', 'scoreOverall'];
+        const containers = document.querySelectorAll('.rating-container');
+        
+        // สร้างปุ่มดาว
+        containers.forEach((container, index) => {
+            const fieldName = ratingFields[index];
+            let html = '';
+            for(let i = 5; i >= 1; i--) {
+                html += `
+                    <input type="radio" id="${fieldName}-${i}" name="${fieldName}" value="${i}">
+                    <label for="${fieldName}-${i}" title="${i} ดาว">
+                        <i class="fa-solid fa-star drop-shadow-sm"></i>
+                    </label>
+                `;
+            }
+            container.innerHTML = html;
+            container.classList.add('star-rating');
+        });
+
+        // จัดการฟอร์มด้วย SweetAlert
+        document.getElementById('surveyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 1. ตรวจสอบดาวว่าครบไหม
+            let allAnswered = true;
+            ratingFields.forEach(field => {
+                if(!document.querySelector(`input[name="${field}"]:checked`)) {
+                    allAnswered = false;
+                }
+            });
+            
+            if(!allAnswered) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ข้อมูลไม่ครบถ้วน',
+                    text: 'กรุณาให้คะแนนดาวให้ครบทุกหัวข้อครับ',
+                    confirmButtonColor: '#0d9488', // สีปุ่ม Teal
+                    confirmButtonText: 'ตกลง'
+                });
+                return;
+            }
+
+            // 2. แสดง SweetAlert กำลังโหลด
+            Swal.fire({
+                title: 'กำลังส่งข้อมูล',
+                html: 'กรุณารอสักครู่...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // 3. ส่งข้อมูล
+            fetch(APP_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: new URLSearchParams(new FormData(this))
+            })
+            .then(() => {
+                // 4. สำเร็จ
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ส่งผลประเมินสำเร็จ!',
+                    text: 'ขอบพระคุณที่ร่วมประเมินความสะอาดของโรงพยาบาลครับ',
+                    confirmButtonColor: '#10b981', // สีปุ่ม Emerald
+                    confirmButtonText: 'เสร็จสิ้น'
+                }).then((result) => {
+                    window.location.reload();
+                });
+            })
+            .catch((error) => {
+                // 5. ขัดข้อง
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้งครับ',
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'ตกลง'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
