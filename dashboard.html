@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard สถิติความสะอาด | BCH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style> 
+        body { font-family: 'Prompt', sans-serif; } 
+        /* แต่ง Scrollbar สีเขียวสำหรับกล่องคอมเมนต์ */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f0fdf4; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #99f6e4; border-radius: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #2dd4bf; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-teal-900"><i class="fa-solid fa-sparkles mr-2 text-teal-600"></i> Dashboard สถิติความสะอาด</h1>
+                <p class="text-slate-500 text-sm mt-1">สถานที่และสิ่งแวดล้อม โรงพยาบาลกรุงเทพคริสเตียน</p>
+            </div>
+            <button onclick="fetchData()" class="bg-white border border-slate-200 hover:bg-slate-50 text-teal-600 px-5 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-all flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-rotate-right"></i> รีเฟรชข้อมูล
+            </button>
+        </div>
+
+        <div id="loading" class="text-center py-20">
+            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-teal-500 mb-4"></i>
+            <p class="text-slate-500 font-medium">กำลังดึงข้อมูลสถิติ...</p>
+        </div>
+
+        <div id="dashboardContent" class="hidden space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 text-xl"><i class="fa-solid fa-users"></i></div>
+                    <div>
+                        <p class="text-slate-500 text-sm">จำนวนผู้ประเมิน</p>
+                        <h3 class="text-2xl font-bold text-slate-800" id="totalResponses">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 text-xl"><i class="fa-solid fa-star"></i></div>
+                    <div>
+                        <p class="text-slate-500 text-sm">คะแนนภาพรวมเฉลี่ย</p>
+                        <h3 class="text-2xl font-bold text-slate-800" id="avgOverall">0.00</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-cyan-50 flex items-center justify-center text-cyan-600 text-xl"><i class="fa-solid fa-couch"></i></div>
+                    <div>
+                        <p class="text-slate-500 text-sm">โถงและที่พักรอเฉลี่ย</p>
+                        <h3 class="text-2xl font-bold text-slate-800" id="avgHall">0.00</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-sky-50 flex items-center justify-center text-sky-600 text-xl"><i class="fa-solid fa-restroom"></i></div>
+                    <div>
+                        <p class="text-slate-500 text-sm">ห้องน้ำเฉลี่ย</p>
+                        <h3 class="text-2xl font-bold text-slate-800" id="avgRestroom">0.00</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
+                    <h3 class="text-md font-semibold text-slate-800 mb-4"><i class="fa-solid fa-chart-column text-teal-500 mr-2"></i> คะแนนเฉลี่ยความสะอาดแต่ละพื้นที่</h3>
+                    <div class="relative h-72 w-full">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-md font-semibold text-slate-800 mb-4"><i class="fa-solid fa-chart-pie text-teal-500 mr-2"></i> สัดส่วนความพึงพอใจรวม</h3>
+                    <div class="relative h-72 w-full flex justify-center">
+                        <canvas id="doughnutChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-3">
+                    <h3 class="text-md font-semibold text-slate-800 mb-4"><i class="fa-regular fa-comments text-teal-500 mr-2"></i> ข้อเสนอแนะเพิ่มเติมเรื่องความสะอาด</h3>
+                    <div id="commentsContainer" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-2">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // *** สำคัญมาก: นำ URL Web App ของ Google Apps Script (อันใหม่) มาใส่ตรงนี้ ***
+        const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTkGVVeZg2Jkge4H1yZPMbKERUvHOsCK-pMzzj8U_kUfdE6B6VSjQUE94E_UTTcVz1/exec";
+
+        let barChartInstance = null;
+        let doughnutChartInstance = null;
+
+        const getAverage = (arr) => arr.length ? (arr.reduce((a, b) => a + Number(b), 0) / arr.length).toFixed(2) : "0.00";
+
+        async function fetchData() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('dashboardContent').classList.add('hidden');
+
+            try {
+                const response = await fetch(APP_SCRIPT_URL);
+                const result = await response.json();
+
+                if(result.status === 'success') {
+                    // กรองเอาเฉพาะข้อมูลที่มีคะแนนภาพรวม (ป้องกันแถวว่าง)
+                    const data = result.data.filter(row => row.scoreOverall); 
+                    
+                    document.getElementById('totalResponses').innerText = data.length;
+                    
+                    const scoresHall = data.map(r => r.scoreHall);
+                    const scoresStairs = data.map(r => r.scoreStairs);
+                    const scoresElevator = data.map(r => r.scoreElevator);
+                    const scoresRestroom = data.map(r => r.scoreRestroom);
+                    const scoresOverall = data.map(r => r.scoreOverall);
+                    
+                    const comments = data.map(r => r.comments).filter(c => c && c.toString().trim() !== "");
+
+                    // อัปเดตตัวเลขหน้าการ์ด
+                    document.getElementById('avgOverall').innerText = getAverage(scoresOverall);
+                    document.getElementById('avgHall').innerText = getAverage(scoresHall);
+                    document.getElementById('avgRestroom').innerText = getAverage(scoresRestroom);
+
+                    // สร้างกราฟ
+                    renderCharts(
+                        [getAverage(scoresHall), getAverage(scoresStairs), getAverage(scoresElevator), getAverage(scoresRestroom), getAverage(scoresOverall)],
+                        scoresOverall
+                    );
+
+                    renderComments(comments);
+
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('dashboardContent').classList.remove('hidden');
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาดในการดึงข้อมูล กรุณาตรวจสอบ URL หรือสิทธิ์การเข้าถึง');
+                console.error(error);
+            }
+        }
+
+        function renderCharts(avgScores, overallScoresArray) {
+            Chart.defaults.font.family = "'Prompt', sans-serif";
+            
+            // --- กราฟแท่ง ---
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            if(barChartInstance) barChartInstance.destroy();
+            
+            barChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['โถงและที่พักรอ', 'บันได/บันไดเลื่อน', 'ภายในลิฟต์', 'ห้องน้ำ', 'ภาพรวมความสะอาด'],
+                    datasets: [{
+                        label: 'คะแนนเฉลี่ย (เต็ม 5)',
+                        data: avgScores,
+                        // ใช้โทนสีเขียว ฟ้า น้ำเงิน
+                        backgroundColor: ['#0d9488', '#0ea5e9', '#3b82f6', '#14b8a6', '#f59e0b'],
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 5 } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // --- กราฟโดนัท ---
+            const scoreCounts = { '5':0, '4':0, '3':0, '2':0, '1':0 };
+            overallScoresArray.forEach(score => { if(scoreCounts[score] !== undefined) scoreCounts[score]++; });
+
+            const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+            if(doughnutChartInstance) doughnutChartInstance.destroy();
+
+            doughnutChartInstance = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['5 ดาว', '4 ดาว', '3 ดาว', '2 ดาว', '1 ดาว'],
+                    datasets: [{
+                        data: [scoreCounts['5'], scoreCounts['4'], scoreCounts['3'], scoreCounts['2'], scoreCounts['1']],
+                        backgroundColor: ['#10b981', '#84cc16', '#facc15', '#f97316', '#ef4444'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right' } },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        function renderComments(commentsArray) {
+            const container = document.getElementById('commentsContainer');
+            container.innerHTML = '';
+
+            if (commentsArray.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center py-6 italic">ยังไม่มีข้อเสนอแนะเพิ่มเติม</p>';
+                return;
+            }
+
+            const reversedComments = [...commentsArray].reverse();
+
+            reversedComments.forEach(comment => {
+                const commentBox = `
+                    <div class="bg-teal-50/50 p-4 rounded-xl border border-teal-100 flex gap-3 text-sm text-slate-700 transition-all hover:bg-teal-50">
+                        <i class="fa-solid fa-comment-dots text-teal-400 text-lg mt-0.5"></i>
+                        <p class="leading-relaxed">${comment}</p>
+                    </div>
+                `;
+                container.innerHTML += commentBox;
+            });
+        }
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
